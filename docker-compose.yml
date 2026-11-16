@@ -1,35 +1,41 @@
+
+version: '3.8'
+
 services:
   web:
-    image: nginx:latest
+    image: nginx:alpine
+    container_name: nginx_backend
 
     volumes:
-      - ./website:/usr/share/nginx/html
+      - ./website:/usr/share/nginx/html:ro
 
     expose:
       - "80"
-
+      
     networks:
       - internal
-
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "test -f /usr/share/nginx/html/index.html"]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD-SHELL", "wget -q --spider http://localhost/ || exit 1"]
+      interval: 10s
+      timeout: 5s
       retries: 3
+      start_period: 5s
 
   cache:
     image: varnish:stable
+    container_name: varnish_cache
 
     ports:
       - "8080:80"
 
     volumes:
-      - ./varnish/default.vcl:/etc/varnish/default.vcl
+      - ./varnish/default.vcl:/etc/varnish/default.vcl:ro
 
     depends_on:
       - web
 
-    command: >
+    command: &gt;
       varnishd
       -F
       -f /etc/varnish/default.vcl
@@ -38,5 +44,16 @@ services:
     networks:
       - internal
 
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD-SHELL", "varnishadm status || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
 networks:
   internal:
+    driver: bridge
+    internal: true
