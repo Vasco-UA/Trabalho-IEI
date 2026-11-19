@@ -2,59 +2,143 @@ console.log("Website loaded");
 
 document.addEventListener('DOMContentLoaded', () => {
     const navToggle = document.querySelector('.nav-toggle');
-    const navLinks = document.querySelector('.nav-links');
+    const navLinksContainer = document.querySelector('.nav-links');
+    const navLinks = document.querySelectorAll('.nav-links a');
 
-    // Toggle the 'active' class on click
+    window.isClickNavigation = false;
+
+    // Toggle the 'active' class on mobile click
     navToggle.addEventListener('click', () => {
-        navLinks.classList.toggle('active');
+        navLinksContainer.classList.toggle('active');
     });
 
-    // Optional: Close menu automatically when a link is clicked on mobile
-    navLinks.querySelectorAll('a').forEach(link => {
+    // Handle click on nav links: instantly highlight and lock during smooth scroll
+    navLinks.forEach(link => {
         link.addEventListener('click', () => {
-            if (navLinks.classList.contains('active')) {
-                navLinks.classList.remove('active');
+            window.isClickNavigation = true;
+            
+            navLinks.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+
+            if (navLinksContainer.classList.contains('active')) {
+                navLinksContainer.classList.remove('active');
             }
+
+            setTimeout(() => {
+                window.isClickNavigation = false;
+            }, 600);
         });
     });
 
-    // --- ADDED: Real-Time Performance Telemetry Simulation ---
-    const latencyEl = document.querySelector('.metric-card:nth-child(2) .metric-value');
-    const cpuEl = document.querySelector('.metric-card:nth-child(3) .metric-value');
+    // --- Real-Time Performance Telemetry Simulation ---
+    const latencyEl = document.querySelector('#latency-value');
+    const cpuEl = document.querySelector('#cpu-value');
 
     if (latencyEl && cpuEl) {
         setInterval(() => {
-            // Randomize latency between 10ms and 18ms
             const newLatency = Math.floor(Math.random() * 9) + 10;
             latencyEl.textContent = `${newLatency}ms`;
 
-            // Randomize CPU usage between 1.5% and 3.2%
             const newCpu = (Math.random() * 1.7 + 1.5).toFixed(1);
             cpuEl.textContent = `${newCpu}%`;
-        }, 3000); // Updates every 3 seconds
+        }, 3000);
     }
+
+    // --- Carousel Functionality ---
+    const track = document.querySelector('.carousel-track');
+    if (track) {
+        const slides = Array.from(track.children);
+        const nextButton = document.querySelector('.next-btn');
+        const prevButton = document.querySelector('.prev-btn');
+        const dotsNav = document.querySelector('.carousel-nav');
+        const dots = Array.from(dotsNav.children);
+
+        const moveToSlide = (track, currentSlide, targetSlide) => {
+            const targetIndex = slides.indexOf(targetSlide);
+            track.style.transform = 'translateX(-' + (targetIndex * 100) + '%)';
+            currentSlide.classList.remove('current-slide');
+            targetSlide.classList.add('current-slide');
+        };
+
+        const updateDots = (currentDot, targetDot) => {
+            currentDot.classList.remove('current-slide');
+            targetDot.classList.add('current-slide');
+        };
+
+        prevButton.addEventListener('click', () => {
+            const currentSlide = track.querySelector('.current-slide');
+            const prevSlide = currentSlide.previousElementSibling || slides[slides.length - 1];
+            const currentDot = dotsNav.querySelector('.current-slide');
+            const prevDot = currentDot.previousElementSibling || dots[dots.length - 1];
+
+            moveToSlide(track, currentSlide, prevSlide);
+            updateDots(currentDot, prevDot);
+        });
+
+        nextButton.addEventListener('click', () => {
+            const currentSlide = track.querySelector('.current-slide');
+            const nextSlide = currentSlide.nextElementSibling || slides[0];
+            const currentDot = dotsNav.querySelector('.current-slide');
+            const nextDot = currentDot.nextElementSibling || dots[0];
+
+            moveToSlide(track, currentSlide, nextSlide);
+            updateDots(currentDot, nextDot);
+        });
+
+        dotsNav.addEventListener('click', e => {
+            const targetDot = e.target.closest('button');
+            if (!targetDot) return;
+
+            const currentSlide = track.querySelector('.current-slide');
+            const currentDot = dotsNav.querySelector('.current-slide');
+            const targetIndex = dots.indexOf(targetDot);
+            const targetSlide = slides[targetIndex];
+
+            moveToSlide(track, currentSlide, targetSlide);
+            updateDots(currentDot, targetDot);
+        });
+    }
+
+    updateScrollSpy();
 });
 
-// --- ADDED: Scroll Spy (Highlight Active Navbar Link) ---
-window.addEventListener('scroll', () => {
+// --- Scroll Spy (Highlight Active Navbar Link on Scroll) ---
+function updateScrollSpy() {
+    if (window.isClickNavigation) return;
+
     const sections = document.querySelectorAll('.section');
     const navLinks = document.querySelectorAll('.nav-links a');
     
     let currentSection = '';
+    const scrollPosition = window.scrollY;
+
+    if (scrollPosition < 100) {
+        navLinks.forEach(link => link.classList.remove('active'));
+        return;
+    }
+
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) {
+        navLinks.forEach(link => link.classList.remove('active'));
+        const lastLink = navLinks[navLinks.length - 1];
+        if (lastLink) lastLink.classList.add('active');
+        return;
+    }
     
     sections.forEach(section => {
-        const sectionTop = section.offsetTop;
+        const sectionTop = section.offsetTop - 150;
+        const sectionHeight = section.offsetHeight;
         
-        // Check if user has scrolled past the top of the section (minus 120px offset for the navbar)
-        if (window.scrollY >= (sectionTop - 120)) {
+        if (scrollPosition >= sectionTop && scrollPosition < (sectionTop + sectionHeight)) {
             currentSection = section.getAttribute('id');
         }
     });
 
     navLinks.forEach(link => {
-        link.classList.remove('active');
         if (link.getAttribute('href') === `#${currentSection}`) {
+            navLinks.forEach(l => l.classList.remove('active'));
             link.classList.add('active');
         }
     });
-});
+}
+
+window.addEventListener('scroll', updateScrollSpy);
