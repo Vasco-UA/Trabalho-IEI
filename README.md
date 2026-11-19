@@ -61,5 +61,7 @@ Porta interna: 80
 Cache
 Imagem: varnish:stable
 Porta externa: 8080
-Autor
-Vasco
+Autores
+Vasco Leite - 139506
+Guilherme Santos - 139571
+José Pedro - 139593
