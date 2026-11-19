@@ -34,7 +34,6 @@ A utilização de IA limitou-se estritamente ao papel de ferramenta de apoio té
 
 * **Desenvolvimento de Frontend (HTML e JavaScript):** Apoio na estruturação semântica de elementos HTML e na escrita de elementos JavaScript para interatividade da interface e animações visuais (EX:carrosel) , de modo a enriquecer o conteúdo estático servido pelo sistema.
 * **Debugging e Resolução de Erros:** Auxílio na identificação e correção de erros de sintaxe, problemas  pontuais de código ao longo da criação do projeto
-* *(Opcional — manter apenas se aplicável)* **Revisão Linguística:** Apoio pontual na melhoria da clareza e correção gramatical do texto do relatório.
 
 
 
@@ -87,7 +86,11 @@ Apresentam-se abaixo excertos representativos dos pedidos efetuados à ferrament
 
 "i ve writen code directly on main how can i pass it to abranch without ruining all the code?"
 
+### Prompt 8
 
+"how do i add members to my repository"
+
+nota: os prompts não se encontram por ordem de utilização .
 
 
 
